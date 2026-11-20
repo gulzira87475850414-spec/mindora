@@ -254,6 +254,144 @@
  .mobile-camera-pip{right:7px;top:clamp(175px,30dvh,240px);width:104px}
 }
 
-/* Mindora voice comparison link */
-.mindora-voice-lab-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:#fff;border:1px solid #b897ff77;border-radius:16px;padding:12px 15px;background:linear-gradient(135deg,#8559cf,#57349b);font-size:13px;font-weight:800;margin-top:8px;box-shadow:0 8px 25px #6234b866}
-.mindora-voice-lab-link:focus-visible{outline:2px solid #fff;outline-offset:3px}
+/* ==============================================
+   MINDORA V4 · Local living-avatar motion system
+   No external animation subscription.
+   ============================================== */
+.avatar-container.photo-avatar .mindora-living-portrait {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  overflow: visible;
+  isolation: isolate;
+  --mindora-voice: 0;
+}
+.mindora-avatar-floating {
+  position: relative;
+  width: min(100%, 590px);
+  height: min(100%, 575px);
+  transform-origin: 50% 60%;
+  animation: mindora-idle-breath 6.8s ease-in-out infinite;
+  filter: drop-shadow(0 14px 37px rgba(138,88,218,.2));
+}
+.mindora-avatar-floating img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center top;
+  user-select: none;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  -webkit-mask-image: radial-gradient(ellipse 68% 68% at 50% 45%, #000 58%, transparent 99%);
+  mask-image: radial-gradient(ellipse 68% 68% at 50% 45%, #000 58%, transparent 99%);
+}
+.mindora-portrait-base { z-index: 1; opacity: 1; }
+.mindora-avatar-floating .mindora-portrait-blink {
+  z-index: 2;
+  opacity: 0;
+  clip-path: inset(26% 21% 53% 21%);
+  animation: mindora-eye-blink 6.2s infinite;
+}
+.mindora-avatar-floating .mindora-portrait-talking {
+  z-index: 3;
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+.mindora-avatar-floating .mindora-portrait-smile {
+  z-index: 4;
+  opacity: 0;
+  transition: opacity .28s ease;
+}
+.mindora-is-speaking .mindora-avatar-floating {
+  animation: mindora-speaking-motion 3.6s ease-in-out infinite;
+}
+.mindora-is-speaking .mindora-avatar-floating .mindora-portrait-talking { opacity: 1; }
+.mindora-is-speaking .mindora-avatar-floating .mindora-portrait-blink { opacity: 0; animation: none; }
+.mindora-is-smiling .mindora-avatar-floating .mindora-portrait-smile { opacity: 1; }
+.mindora-avatar-aura {
+  position: absolute;
+  z-index: -1;
+  left: 50%; top: 8%;
+  transform: translateX(-50%);
+  width: min(95%, 560px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle,rgba(187,135,255,.30) 5%,rgba(159,96,252,.12) 45%,transparent 70%);
+  box-shadow: 0 0 120px rgba(162,86,248,.24);
+  animation: mindora-aura-pulse 5.2s ease-in-out infinite;
+}
+.mindora-is-speaking .mindora-avatar-aura {
+  box-shadow: 0 0 80px rgba(172,106,255,.38),0 0 160px rgba(172,106,255,.18);
+  animation-duration: 2.4s;
+}
+.mindora-avatar-sparkle {
+  position: absolute;
+  width: 4px;height: 4px;
+  z-index: 5;
+  border-radius: 50%;
+  background: #efdfff;
+  box-shadow: 0 0 14px 4px rgba(221,180,255,.66);
+  pointer-events: none;
+  animation: mindora-sparkle 4s ease-in-out infinite;
+}
+.mindora-avatar-sparkle.one { top: 25%; right: 10%; }
+.mindora-avatar-sparkle.two { top: 42%; left: 12%; animation-delay: 1.7s; }
+.mindora-avatar-preview-btn {
+  display: flex;align-items: center;justify-content: center;gap: 8px;
+  margin-top: 11px;
+  border-radius: 14px;
+  background: rgba(149,93,223,.23);
+  border: 1px solid rgba(201,165,255,.49);
+  color: #f6e8ff;
+  padding: 11px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  width: 100%;
+  cursor: pointer;
+}
+.mindora-avatar-preview-btn:hover { background: rgba(173,116,235,.35); }
+.avatar-mode-pills .avatar-smile-control { display:inline-flex;gap:5px;align-items:center;justify-content:center; }
+.avatar-mode-pills .avatar-smile-control svg { width: 15px;height:15px; }
+@keyframes mindora-idle-breath {
+  0%,100% { transform:translateY(0) rotate(-.45deg) scale(1); }
+  50% { transform:translateY(-6px) rotate(.45deg) scale(1.008); }
+}
+@keyframes mindora-speaking-motion {
+  0%,100% { transform:translateY(0) rotate(-.6deg); }
+  30% { transform:translateY(-5px) rotate(.55deg); }
+  65% { transform:translateY(1px) rotate(-.15deg); }
+}
+@keyframes mindora-eye-blink {
+  0%, 76%, 77.5%, 79%, 100% { opacity:0; }
+  77%, 78.1% { opacity: 1; }
+}
+@keyframes mindora-aura-pulse { 0%,100%{opacity:.6;transform:translateX(-50%) scale(.985)} 50%{opacity:1;transform:translateX(-50%) scale(1.04)} }
+@keyframes mindora-sparkle { 0%,100%{opacity:.1;transform:translateY(0) scale(.6)} 50%{opacity:.95;transform:translateY(-11px) scale(1.4)} }
+@media (max-width: 900px) {
+  .mindora-avatar-floating { width:100%;height:100%; }
+  .mindora-avatar-aura { width:min(102%,440px);top:8%; }
+}
+@media (max-width: 640px) {
+  .avatar-container.photo-avatar .mindora-living-portrait { width:100%; height:100%; }
+  .mindora-avatar-floating { width:100%;height:100%; }
+  .mindora-avatar-aura {width:95%;top:9%;}
+  .avatar-mode-pills .avatar-smile-control {font-size:10px;padding:6px 8px;}
+}
+@media (prefers-reduced-motion:reduce) {
+  .mindora-avatar-floating,.mindora-avatar-aura,.mindora-avatar-sparkle,.mindora-portrait-blink { animation:none!important; }
+  .mindora-avatar-floating .mindora-portrait-blink {opacity:0!important;}
+}
+.mindora-no-motion .mindora-avatar-floating,.mindora-no-motion .mindora-avatar-aura,
+.mindora-no-motion .mindora-avatar-sparkle,.mindora-no-motion .mindora-portrait-blink { animation:none!important; }
+
+/* V4 FIX · Portrait image frames now contain true alpha transparency. */
+.mindora-avatar-floating img {
+ -webkit-mask-image: none !important;
+ mask-image: none !important;
+}

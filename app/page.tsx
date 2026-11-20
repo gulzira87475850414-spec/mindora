@@ -1,11 +1,11 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { supportInstructions } from '@/lib/prompts';
+import AnimatedCounselor from './AnimatedCounselor';
 import { AudioLines, ArrowLeft, Bot, CalendarDays, Camera, CameraOff, Check, ChevronRight, CircleHelp, ExternalLink, Flower2, Globe2, Headphones, Heart, HeartHandshake, Home, Info, Leaf, LocateFixed, MapPin, MessageCircle, Mic, MicOff, Moon, Pause, Play, RotateCcw, Send, Settings2, ShieldCheck, Sparkles, Sun, Volume2, VolumeX, Waves, Wind, X } from 'lucide-react';
 
 type Page='talk'|'space'|'breath'|'experts';
 type Lang='kk'|'ru';
-type Voice='marin'|'shimmer'|'coral';
 type Avatar='human'|'robot';
 type Scene='rain'|'stars'|'lake';
 type Message={role:'user'|'assistant';content:string};
@@ -24,8 +24,11 @@ function SoundWave({live=false}:{live?:boolean}){return <div className={'sound-w
 export default function Mindora(){
  const [page,setPage]=useState<Page>('talk');
  const [language,setLanguage]=useState<Lang>('kk');
- const [voice,setVoice]=useState<Voice>('marin');
  const [avatar,setAvatar]=useState<Avatar>('human');
+ const [portraitStyle,setPortraitStyle]=useState<'animated'|'classic'>('animated');
+ const [previewSmile,setPreviewSmile]=useState(false);
+ const [replyActive,setReplyActive]=useState(false);
+ const [voiceLevel,setVoiceLevel]=useState(0);
  const [languageAsked,setLanguageAsked]=useState(false);
  const [dark,setDark]=useState(false);
  const [settings,setSettings]=useState(false);
@@ -54,6 +57,8 @@ export default function Mindora(){
  const audioStreamRef=useRef<MediaStream|null>(null);
  const dataChannelRef=useRef<RTCDataChannel|null>(null);
  const audioRef=useRef<HTMLAudioElement|null>(null);
+ const replyAudioContextRef=useRef<AudioContext|null>(null);
+ const replyAnalyserAnimationRef=useRef<number|null>(null);
  const endRef=useRef<HTMLDivElement|null>(null);
  const audioContextRef=useRef<AudioContext|null>(null);
  const ambientSourceRef=useRef<AudioBufferSourceNode|null>(null);
@@ -69,10 +74,11 @@ export default function Mindora(){
  const totalCycles=Math.floor(breathTicks/14);
 
  useEffect(()=>{
-  try{const lang=localStorage.getItem('mindora-language');if(lang==='kk'||lang==='ru'){setLanguage(lang);setLanguageAsked(true);}const savedVoice=localStorage.getItem('mindora-voice');if(savedVoice==='marin'||savedVoice==='shimmer'||savedVoice==='coral')setVoice(savedVoice);const ava=localStorage.getItem('mindora-avatar');if(ava==='human'||ava==='robot')setAvatar(ava);}catch{}
+  try{const lang=localStorage.getItem('mindora-language');if(lang==='kk'||lang==='ru'){setLanguage(lang);setLanguageAsked(true);}const ava=localStorage.getItem('mindora-avatar');if(ava==='human'||ava==='robot')setAvatar(ava);const style=localStorage.getItem('mindora-portrait-style');if(style==='animated'||style==='classic')setPortraitStyle(style);}catch{}
  },[]);
  const changeLang=(l:Lang)=>{setLanguage(l);setLanguageAsked(true);try{localStorage.setItem('mindora-language',l);}catch{};if(dataChannelRef.current?.readyState==='open')dataChannelRef.current.send(JSON.stringify({type:'session.update',session:{instructions:supportInstructions+`\nContinue the existing conversation naturally in ${l==='kk'?'Kazakh':'Russian'}. Respect the student's preferred language.`}}));};
  const changeAvatar=(a:Avatar)=>{setAvatar(a);try{localStorage.setItem('mindora-avatar',a);}catch{}};
+ const changePortraitStyle=(style:'animated'|'classic')=>{setPortraitStyle(style);setPreviewSmile(false);try{localStorage.setItem('mindora-portrait-style',style);}catch{}};
  useEffect(()=>{if(!breathing)return;const timer=window.setInterval(()=>setBreathTicks(v=>v+1),1000);return()=>clearInterval(timer)},[breathing]);
  useEffect(()=>{
   const stream = cameraOn ? cameraStreamRef.current : null;
@@ -106,7 +112,9 @@ export default function Mindora(){
  };
  const stopVoice=useCallback(()=>{
   try{dataChannelRef.current?.close();pcRef.current?.close();audioStreamRef.current?.getTracks().forEach(t=>t.stop());if(audioRef.current){audioRef.current.pause();audioRef.current.srcObject=null;}}catch{}
-  dataChannelRef.current=null;pcRef.current=null;audioStreamRef.current=null;setConnection('off');setVoiceStatus('');
+  if(replyAnalyserAnimationRef.current!==null){cancelAnimationFrame(replyAnalyserAnimationRef.current);replyAnalyserAnimationRef.current=null;}
+  replyAudioContextRef.current?.close().catch(()=>{});replyAudioContextRef.current=null;
+  dataChannelRef.current=null;pcRef.current=null;audioStreamRef.current=null;setConnection('off');setVoiceStatus('');setReplyActive(false);setVoiceLevel(0);
  },[]);
  const selectPage=(p:Page)=>{setPage(p);setSettings(false);if(p==='breath')setChatOpen(false)};
  const actOnTool=(name:string,args:Record<string,string>)=>{
@@ -117,16 +125,39 @@ export default function Mindora(){
  };
  const startVoice=async()=>{
   if(connection!=='off')return;
-  setVoiceError('');setConnection('connecting');setVoiceStatus(tr('Қосылып жатыр…','Подключение…'));
+  setPreviewSmile(false);setVoiceError('');setConnection('connecting');setVoiceStatus(tr('Қосылып жатыр…','Подключение…'));
   let stream:MediaStream|null=null;let pc:RTCPeerConnection|null=null;
   try{
    // Check API configuration before requesting any microphone permission.
-   const tokenRes=await fetch('/api/realtime-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({language,voice})});
+   const tokenRes=await fetch('/api/realtime-token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({language})});
    const token=await tokenRes.json();if(!tokenRes.ok||!token.value)throw Error(token.error||'No session token');
    // The user's browser must grant microphone access: Siri cannot bypass it.
    stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true},video:false});audioStreamRef.current=stream;
    pc=new RTCPeerConnection();pcRef.current=pc;stream.getAudioTracks().forEach(track=>pc!.addTrack(track,stream!));
-   if(audioRef.current){audioRef.current.autoplay=true;pc.ontrack=e=>{if(audioRef.current){audioRef.current.srcObject=e.streams[0];audioRef.current.play().catch(()=>setVoiceError(tr('iPhone дыбысты ойнату үшін экранды басуды сұрауы мүмкін.','Для звука на iPhone может понадобиться касание экрана.')));}};}
+   if(audioRef.current){audioRef.current.autoplay=true;pc.ontrack=e=>{
+     if(audioRef.current){audioRef.current.srcObject=e.streams[0];audioRef.current.play().catch(()=>setVoiceError(tr('iPhone дыбысты ойнату үшін экранды басуды сұрауы мүмкін.','Для звука на iPhone может понадобиться касание экрана.')));}
+     // Listen only to the AI output stream. Never infer emotions from the student's camera.
+     // The AI audio is already played by <audio>; the analyser is NOT connected to speakers.
+     try{
+       const ctx=new AudioContext();replyAudioContextRef.current=ctx;
+       const source=ctx.createMediaStreamSource(e.streams[0]);
+       const analyser=ctx.createAnalyser();analyser.fftSize=512;analyser.smoothingTimeConstant=0.76;
+       source.connect(analyser);const samples=new Uint8Array(analyser.fftSize);
+       let last=0;let smooth=0;
+       const measure=(t:number)=>{
+         if(ctx.state==='closed')return;
+         analyser.getByteTimeDomainData(samples);
+         let sum=0;for(const b of samples){const v=(b-128)/128;sum+=v*v;}
+         const rms=Math.sqrt(sum/samples.length);
+         const level=Math.min(1,Math.max(0,(rms-.012)*13));
+         smooth=smooth*.74+level*.26;
+         if(t-last>=95){setVoiceLevel(smooth);last=t;}
+         replyAnalyserAnimationRef.current=requestAnimationFrame(measure);
+       };
+       replyAnalyserAnimationRef.current=requestAnimationFrame(measure);
+       ctx.resume().catch(()=>{});
+     }catch(err){console.warn('Audio analysis unavailable; using response events',err);}
+   };}
    const dc=pc.createDataChannel('oai-events');dataChannelRef.current=dc;
    dc.addEventListener('open',()=>{setConnection('on');setVoiceStatus(tr('AI сені тыңдап тұр','AI слушает тебя'));
      // Let the agent begin with the language greeting; the token is created only on a user gesture.
@@ -136,8 +167,8 @@ export default function Mindora(){
     try{
      const v=JSON.parse(event.data);
      if(v.type==='input_audio_buffer.speech_started')setVoiceStatus(tr('Тыңдап тұрмын…','Слушаю…'));
-     if(v.type==='response.created')setVoiceStatus(tr('Жауап беріп жатыр…','Отвечаю…'));
-     if(v.type==='response.done')setVoiceStatus(tr('Сені тыңдап тұрмын','Слушаю тебя'));
+     if(v.type==='response.created'){setVoiceStatus(tr('Жауап беріп жатыр…','Отвечаю…'));setReplyActive(true);}
+     if(v.type==='response.done'){setVoiceStatus(tr('Сені тыңдап тұрмын','Слушаю тебя'));setReplyActive(false);}
      if(v.type==='conversation.item.input_audio_transcription.completed'&&v.transcript?.trim())setMessages(a=>[...a.slice(-16),{role:'user',content:v.transcript}]);
      if(v.type==='response.output_audio_transcript.done'&&v.transcript?.trim())setMessages(a=>[...a.slice(-16),{role:'assistant',content:v.transcript}]);
      if(v.type==='response.function_call_arguments.done'){
@@ -177,7 +208,7 @@ export default function Mindora(){
    {page==='space'&&<div className="scene-background" style={{backgroundImage:`linear-gradient(180deg,rgba(12,9,31,.48),rgba(15,9,36,.61)), url('${currentScene.image}')`}}/>}
    <div className="ambient-glow glow-one"/><div className="ambient-glow glow-two"/><div className="cosmos-sparkles" aria-hidden="true"/>
    <header className="topbar">
-     <button onClick={()=>selectPage('talk')} className="brand" aria-label="Mindora басты бет"><Lotus size={45}/><span><strong>Mindora <em className="brand-v3">V3.2</em></strong><small>{tr('Сенің AI қолдаушың','Твой AI-помощник')}</small></span></button>
+     <button onClick={()=>selectPage('talk')} className="brand" aria-label="Mindora басты бет"><Lotus size={45}/><span><strong>Mindora <em className="brand-v3">V4</em></strong><small>{tr('Сенің AI қолдаушың','Твой AI-помощник')}</small></span></button>
      <div className="header-center-note" aria-label={tr('Қолдау кеңістігі','Пространство поддержки')}><span className="header-online-dot"/><span>{tr('Сені тыңдауға дайынмын','Я готова тебя выслушать')}</span><Sparkles size={16}/></div>
      <div className="top-actions"><button className="top-lang" onClick={()=>setSettings(true)}><Globe2 size={17}/><span>{language==='kk'?'Қазақша':'Русский'}</span></button><button aria-label="Баптаулар" className="icon-top" onClick={()=>setSettings(true)}><Settings2 size={19}/></button></div>
    </header>
@@ -196,8 +227,8 @@ export default function Mindora(){
    {page==='talk'&&<main className="main-layout talk-layout">
      <section className="left-panel desktop-side"><div className="glass-bubble welcome-bubble">{firstGreeting}<p>{tr('Мен сені тыңдауға дайынмын.','Я готова тебя выслушать.')}</p></div><div className="glass-bubble prompt-bubble">{tr('Қазір өзіңді қалай сезініп тұрсың? Қаласаң, жай сөйлесейік.','Как ты себя сейчас чувствуешь? Можем просто поговорить.')}</div><p className="tiny-label">✧ {tr('Жылдам әрекеттер','Быстрые действия')}</p><div className="left-actions"><button onClick={()=>quick('breath')}><Wind size={18}/>{tr('Тыныс алу','Дыхание')}</button><button onClick={()=>quick('space')}><Leaf size={18}/>EmotionSpace</button><button onClick={()=>selectPage('experts')}><HeartHandshake size={18}/>{tr('Маман табу','Специалист')}</button></div></section>
      <section className="hero-area"><div className="hero-orbit"/><div className="orbit-glow" aria-hidden="true"/><div className="hero-sparkle hero-sparkle-a"/><div className="hero-sparkle hero-sparkle-b"/><div className={'avatar-container '+(avatar==='human'?'photo-avatar':'')}>
-       {avatar==='human'?<img className="counselor" src="/media/counselor-cutout.png" alt="Mindora виртуалды AI-кеңесші аватары"/>:<RobotFace/>}
-       </div><div className="avatar-mode-pills"><button className={avatar==='human'?'chosen':''} onClick={()=>changeAvatar('human')}>{tr('Адам бейнесі','Человек')}</button><button className={avatar==='robot'?'chosen':''} onClick={()=>changeAvatar('robot')}><Bot size={15}/> {tr('AI робот','AI робот')}</button></div><SoundWave live={connection==='on'}/><div className="avatar-voice-label">{connection==='on'?voiceStatus:connection==='connecting'?tr('Қосылу…','Подключение…'):tr('Сөйлесуге дайынмын…','Готова к разговору…')}</div>
+       {avatar==='human'?(portraitStyle==='animated'?<AnimatedCounselor speaking={connection==='on'&&(replyActive||voiceLevel>0.1)} voiceLevel={voiceLevel} previewSmile={previewSmile} alt="Mindora жанды AI-кеңесші аватары"/>:<img className="counselor" src="/media/counselor-cutout.png" alt="Mindora виртуалды AI-кеңесші аватары"/>):<RobotFace/>}
+       </div><div className="avatar-mode-pills"><button className={avatar==='human'?'chosen':''} onClick={()=>changeAvatar('human')}>{tr('Адам бейнесі','Человек')}</button><button className={avatar==='robot'?'chosen':''} onClick={()=>changeAvatar('robot')}><Bot size={15}/> {tr('AI робот','AI робот')}</button>{avatar==='human'&&portraitStyle==='animated'&&<button className={'avatar-smile-control '+(previewSmile?'chosen':'')} onClick={()=>setPreviewSmile(v=>!v)} aria-label={tr('Жымию анимациясын көрсету','Показать улыбку')}><Sparkles size={15}/>{previewSmile?tr('Тоқтату','Стоп'):tr('Жымию','Улыбка')}</button>}</div><SoundWave live={connection==='on'}/><div className="avatar-voice-label">{connection==='on'?voiceStatus:connection==='connecting'?tr('Қосылу…','Подключение…'):tr('Сөйлесуге дайынмын…','Готова к разговору…')}</div>
        {!languageAsked&&<div className="language-welcome glass-panel"><strong>{tr('Сәлем, досым! Қай тілде сөйлескен ыңғайлы?','Привет, друг! На каком языке тебе удобно?')}</strong><div><button onClick={()=>changeLang('kk')}>Қазақша</button><button onClick={()=>changeLang('ru')}>Русский</button></div></div>}
        <div className="mobile-message glass-panel"><p><b>{firstGreeting}</b></p><p>{tr('Мен сені тыңдауға дайынмын. Өзіңді қалай сезініп тұрсың?','Я готова тебя выслушать. Как ты себя чувствуешь?')}</p></div>
        <div className="voice-controls"><button onClick={toggleCamera} aria-label={cameraOn?'Камераны өшіру':'Камераны қосу'} className={cameraOn?'glowing':''}>{cameraOn?<Camera size={21}/>:<CameraOff size={21}/>}</button><button onClick={connection==='on'?stopVoice:startVoice} className={'mic-primary '+(connection==='on'?'mic-on':'')} disabled={connection==='connecting'} aria-label={connection==='on'?'Дауысты тоқтату':'Дауыстық сөйлесуді бастау'}>{connection==='on'?<MicOff size={27}/>:<Mic size={30}/>}</button><button onClick={()=>setChatOpen(v=>!v)} aria-label="Мәтіндік чат"><MessageCircle size={22}/></button><button onClick={()=>{stopVoice();setChatOpen(false)}} aria-label="Қоңырауды аяқтау" className="hangup"><X size={22}/></button></div>
@@ -221,10 +252,10 @@ export default function Mindora(){
    </aside>}
    {chatOpen&&<section className="chat-drawer" aria-label="Мәтіндік әңгіме"><div className="chat-header"><span><MessageCircle size={19}/>{tr('Mindora-мен әңгіме','Чат с Mindora')}</span><button onClick={()=>setChatOpen(false)} aria-label="Жабу"><X size={19}/></button></div><div className="chat-messages"><div className="chat-msg assistant">{tr('Сәлем, досым! Мен AI көмекшімін. Саған қай тілде сөйлескен ыңғайлы?','Привет, друг! Я AI-помощник. На каком языке тебе удобно общаться?')}</div>{messages.map((m,i)=><div key={i} className={'chat-msg '+m.role}>{m.content}</div>)}{sending&&<div className="chat-msg assistant">{tr('Ойланып жатырмын…','Думаю…')}</div>}<div ref={endRef}/></div><form onSubmit={e=>{e.preventDefault();sendText()}} className="chat-form"><input value={draft} onChange={e=>setDraft(e.target.value)} placeholder={tr('Не мазалап жүр? Жаза бер…','Что тебя беспокоит? Напиши…')} maxLength={2000}/><button type="submit" disabled={!draft.trim()||sending} aria-label="Жіберу"><Send size={18}/></button></form>{demo&&<div className="demo-notice">{tr('Демо жауаптар: нақты AI үшін API кілтін орнатыңыз.','Демо-ответы: для AI добавьте API-ключ.')}</div>}</section>}
    {voiceError&&<div className="error-toast" role="alert"><Info size={18}/><span>{voiceError}</span><button onClick={()=>setVoiceError('')}><X size={16}/></button></div>}
-   <footer className="page-footer"><ShieldCheck size={16}/><span>{tr('AI психологты алмастырмайды. Камера мен микрофон тек рұқсатпен қосылады.','AI не заменяет психолога. Камера и микрофон включаются с разрешения.')}</span><span className="version-mark">V3.2 • Voice Lab</span></footer>
+   <footer className="page-footer"><ShieldCheck size={16}/><span>{tr('AI психологты алмастырмайды. Камера мен микрофон тек рұқсатпен қосылады.','AI не заменяет психолога. Камера и микрофон включаются с разрешения.')}</span><span className="version-mark">V4 • Жанды аватар</span></footer>
    <nav className="mobile-bottom" aria-label="Бөлімдер"><button className={page==='talk'?'current':''} onClick={()=>selectPage('talk')}><Home size={22}/><span>{tr('Басты','Главная')}</span></button><button className={page==='space'?'current':''} onClick={()=>selectPage('space')}><Leaf size={22}/><span>EmotionSpace</span></button><button className={page==='breath'?'current':''} onClick={()=>selectPage('breath')}><Flower2 size={22}/><span>{tr('Жаттығу','Дыхание')}</span></button><button className={page==='experts'?'current':''} onClick={()=>selectPage('experts')}><HeartHandshake size={22}/><span>{tr('Психолог','Психолог')}</span></button></nav>
    <audio ref={audioRef} autoPlay playsInline />
-   {settings&&<div className="modal-backdrop" onClick={()=>setSettings(false)}><div role="dialog" aria-modal="true" aria-label="Баптаулар" className="settings-modal glass-panel" onClick={e=>e.stopPropagation()}><div className="settings-heading"><h2><Settings2 size={21}/>{tr('Баптаулар','Настройки')}</h2><button onClick={()=>setSettings(false)} aria-label="Жабу"><X size={21}/></button></div><div className="settings-item"><strong>{tr('Сөйлесу тілі','Язык разговора')}</strong><div className="segmented"><button className={language==='kk'?'selected':''} onClick={()=>changeLang('kk')}>Қазақша</button><button className={language==='ru'?'selected':''} onClick={()=>changeLang('ru')}>Русский</button></div></div><div className="settings-item"><strong>{tr('Виртуалды бейне','Виртуальный аватар')}</strong><div className="segmented"><button className={avatar==='human'?'selected':''} onClick={()=>changeAvatar('human')}>{tr('Адам','Человек')}</button><button className={avatar==='robot'?'selected':''} onClick={()=>changeAvatar('robot')}>{tr('Робот','Робот')}</button></div></div><div className="settings-item"><strong>{tr('Mindora дауысы','Голос Mindora')}: {voice}</strong><p className="mood-disclaimer">{tr('Қазақша дыбыстарды үш дауыста салыстыруға болады. Дауыс келесі сөйлесуден бастап өзгереді.','Сравните произношение на трёх голосах. Новый голос применяется со следующего разговора.')}</p><a href="/voice-test" className="mindora-voice-lab-link">{tr('🎧 Дауыстарды тыңдап салыстыру','🎧 Сравнить голоса')}</a></div><div className="settings-item"><strong>{tr('Түнгі режим','Ночной режим')}</strong><div className="segmented"><button className={!dark?'selected':''} onClick={()=>setDark(false)}><Sun size={16}/>{tr('Әдеттегі','Обычный')}</button><button className={dark?'selected':''} onClick={()=>setDark(true)}><Moon size={16}/>{tr('Қараңғы','Тёмный')}</button></div></div><p className="mood-disclaimer">{tr('Камера мен микрофон тек өз рұқсатыңмен қосылады. Камера бейнесі эмоцияны автоматты анықтау үшін қолданылмайды.','Камера и микрофон включаются только с твоего согласия. Видео не используется для автоматического определения эмоций.')}</p><button className="primary-action" onClick={()=>setSettings(false)}><Check size={18}/>{tr('Дайын','Готово')}</button></div></div>}
+   {settings&&<div className="modal-backdrop" onClick={()=>setSettings(false)}><div role="dialog" aria-modal="true" aria-label="Баптаулар" className="settings-modal glass-panel" onClick={e=>e.stopPropagation()}><div className="settings-heading"><h2><Settings2 size={21}/>{tr('Баптаулар','Настройки')}</h2><button onClick={()=>setSettings(false)} aria-label="Жабу"><X size={21}/></button></div><div className="settings-item"><strong>{tr('Сөйлесу тілі','Язык разговора')}</strong><div className="segmented"><button className={language==='kk'?'selected':''} onClick={()=>changeLang('kk')}>Қазақша</button><button className={language==='ru'?'selected':''} onClick={()=>changeLang('ru')}>Русский</button></div></div><div className="settings-item"><strong>{tr('Виртуалды бейне','Виртуальный аватар')}</strong><div className="segmented"><button className={avatar==='human'?'selected':''} onClick={()=>changeAvatar('human')}>{tr('Адам','Человек')}</button><button className={avatar==='robot'?'selected':''} onClick={()=>changeAvatar('robot')}>{tr('Робот','Робот')}</button></div></div><div className="settings-item"><strong>{tr('Адам бейнесінің қозғалысы','Анимация аватара')}</strong><div className="segmented"><button className={portraitStyle==='animated'?'selected':''} onClick={()=>changePortraitStyle('animated')}>{tr('Жанды бейне','Живой')}</button><button className={portraitStyle==='classic'?'selected':''} onClick={()=>changePortraitStyle('classic')}>{tr('Бұрынғы сурет','Фото')}</button></div>{portraitStyle==='animated'&&<button className="mindora-avatar-preview-btn" type="button" onClick={()=>{setPreviewSmile(v=>!v);setAvatar('human');setPage('talk');setSettings(false);}}><Sparkles size={16}/>{previewSmile?tr('Жымиюды тоқтату','Остановить улыбку'):tr('Жымию мен қимылды көрсету','Показать улыбку и жесты')}</button>}<p className="mood-disclaimer">{tr('Көз жыпылықтау, бас қимылы және дауысқа жауап беретін ерін анимациясы тегін. Дәл фонемалық сәйкестік емес.','Моргание, движения головы и реакция губ на голос — без платного сервиса. Не фонемная синхронизация.')}</p></div><div className="settings-item"><strong>{tr('Түнгі режим','Ночной режим')}</strong><div className="segmented"><button className={!dark?'selected':''} onClick={()=>setDark(false)}><Sun size={16}/>{tr('Әдеттегі','Обычный')}</button><button className={dark?'selected':''} onClick={()=>setDark(true)}><Moon size={16}/>{tr('Қараңғы','Тёмный')}</button></div></div><p className="mood-disclaimer">{tr('Камера мен микрофон тек өз рұқсатыңмен қосылады. Камера бейнесі эмоцияны автоматты анықтау үшін қолданылмайды.','Камера и микрофон включаются только с твоего согласия. Видео не используется для автоматического определения эмоций.')}</p><button className="primary-action" onClick={()=>setSettings(false)}><Check size={18}/>{tr('Дайын','Готово')}</button></div></div>}
  </div>;
 }
 
