@@ -58,7 +58,7 @@ export function useFaceCheckIn({
         const { FaceLandmarker, FilesetResolver } = await import('@mediapipe/tasks-vision');
         if (cancelled) return;
         const fileset = await FilesetResolver.forVisionTasks(
-          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.22/wasm',
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm',
         );
         if (cancelled) return;
         detector = await FaceLandmarker.createFromOptions(fileset, {
