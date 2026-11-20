@@ -253,3 +253,7 @@
 @media(max-width:380px){
  .mobile-camera-pip{right:7px;top:clamp(175px,30dvh,240px);width:104px}
 }
+
+/* Mindora voice comparison link */
+.mindora-voice-lab-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:#fff;border:1px solid #b897ff77;border-radius:16px;padding:12px 15px;background:linear-gradient(135deg,#8559cf,#57349b);font-size:13px;font-weight:800;margin-top:8px;box-shadow:0 8px 25px #6234b866}
+.mindora-voice-lab-link:focus-visible{outline:2px solid #fff;outline-offset:3px}
