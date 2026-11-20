@@ -395,3 +395,20 @@
  -webkit-mask-image: none !important;
  mask-image: none !important;
 }
+
+/* Mindora V5: optional facial-movement consent, no changes to V4 avatar or voice. */
+.mindora-face-check{margin-top:10px;color:#e9d9ff;font-size:11px;line-height:1.45}
+.mindora-face-check button{padding:9px 11px;border:1px solid #c79aff88;background:#7d49b254;color:#fff;border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;width:100%}
+.mindora-face-check button[aria-pressed="true"]{background:#482d69;border-color:#d2a0fa}
+.mindora-face-status{display:block;margin:8px 0 3px;color:#eddcff;font-size:11px;font-weight:650}
+.mindora-face-question{margin:7px 0;background:#8f66c43b;border-radius:10px;padding:9px;color:#fff;font-size:11px}
+.mindora-face-check small{display:block;color:#bba9d4;font-size:10px;line-height:1.45;margin-top:8px}
+.mobile-face-check{display:none}
+@media(max-width:680px){
+ .mobile-face-check{display:flex;flex-direction:column;gap:4px;position:fixed;z-index:19;top:calc(clamp(196px,31dvh,310px) + min(40vw, 192px) + 8px);right:12px;width:clamp(108px,32vw,154px);padding:9px 7px;border:1px solid #cb9aff82;border-radius:14px;background:#26183fea;backdrop-filter:blur(15px);box-shadow:0 10px 25px #0904169c}
+ .mobile-face-check button{font-size:9px;padding:8px 5px}
+ .mobile-face-check small,.mobile-face-check .mindora-face-status,.mobile-face-check .mindora-face-question{font-size:9px;line-height:1.3;margin:3px 0}
+}
+@media(max-width:380px){
+ .mobile-face-check{top:calc(clamp(175px,30dvh,240px) + 139px);right:7px;width:104px}
+}
