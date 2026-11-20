@@ -20,32 +20,32 @@ type Resource = {
 // Curated official publication pages (links only; copyrighted files are not copied).
 const resources: Resource[] = [
   {
-    id: "history", lang: "kk", kind: "textbook",
-    title: "Қазіргі психология тарихы", author: "Дуэйн Шульц, Сидней Эллен Шульц", origin: "OpenU.kz",
-    descriptionKk: "Психология ғылымының қалыптасуы мен негізгі бағыттары туралы оқулық.",
-    descriptionRu: "Учебник об истории и основных направлениях психологической науки.",
-    url: "https://openu.kz/kz/book/kazirgi-psihologiya-tarihy"
+    id: "unicef-mental-talk", lang: "kk", kind: "article",
+    title: "Психикалық денсаулық туралы әңгіменің басталуы: 14–18 жас", author: "UNICEF Қазақстан", origin: "UNICEF · Ашық мақала",
+    descriptionKk: "Жасөспірімдердің көңіл күйі мен психикалық денсаулығы туралы әңгіме бастауға арналған ата-аналар мен тәлімгерлерге бағытталған материал.",
+    descriptionRu: "Материал ЮНИСЕФ для родителей и наставников о разговоре с подростком о психическом здоровье.",
+    url: "https://www.unicef.org/kazakhstan/kk/%D0%BE%D2%9B%D0%B8%D2%93%D0%B0%D0%BB%D0%B0%D1%80/%D0%BF%D1%81%D0%B8%D1%85%D0%B8%D0%BA%D0%B0%D0%BB%D1%8B%D2%9B-%D0%B4%D0%B5%D0%BD%D1%81%D0%B0%D1%83%D0%BB%D1%8B%D2%9B-%D1%82%D1%83%D1%80%D0%B0%D0%BB%D1%8B-%D3%99%D2%A3%D0%B3%D1%96%D0%BC%D0%B5%D0%BD%D1%96%D2%A3-%D0%B1%D0%B0%D1%81%D1%82%D0%B0%D0%BB%D1%83%D1%8B-14-18-%D0%B6%D0%B0%D1%81"
   },
   {
-    id: "social", lang: "kk", kind: "textbook",
-    title: "Әлеуметтік психология", author: "Дэвид Майерс, Жан Туенж", origin: "OpenU.kz",
-    descriptionKk: "Адамдар арасындағы қарым-қатынас пен әлеуметтік мінез-құлықты түсіндіреді.",
-    descriptionRu: "О социальном поведении и взаимодействии между людьми.",
-    url: "https://openu.kz/kz/book/aleumettik-psihologiya"
+    id: "unicef-four-ways", lang: "kk", kind: "article",
+    title: "Жасөспірім балаңыздың психикалық денсаулығын қолдаудың төрт әдісі", author: "UNICEF Қазақстан", origin: "UNICEF · Ашық мақала",
+    descriptionKk: "Студент пен жасөспірімді тыңдау, қолдау және күйзелісті басқару жөнінде ата-аналарға арналған кеңестер.",
+    descriptionRu: "Советы ЮНИСЕФ для родителей о поддержке подростков и преодолении стресса.",
+    url: "https://www.unicef.org/kazakhstan/kk/%D0%BE%D2%9B%D0%B8%D2%93%D0%B0%D0%BB%D0%B0%D1%80/%D0%B6%D0%B0%D1%81%D3%A9%D1%81%D0%BF%D1%96%D1%80%D1%96%D0%BC-%D0%B1%D0%B0%D0%BB%D0%B0%D2%A3%D1%8B%D0%B7%D0%B4%D1%8B%D2%A3-%D0%BF%D1%81%D0%B8%D1%85%D0%B8%D0%BA%D0%B0%D0%BB%D1%8B%D2%9B-%D0%B4%D0%B5%D0%BD%D1%81%D0%B0%D1%83%D0%BB%D1%8B%D2%93%D1%8B%D0%BD-%D2%9B%D0%BE%D0%BB%D0%B4%D0%B0%D1%83%D0%B4%D1%8B%D2%A3-%D1%82%D3%A9%D1%80%D1%82-%D3%99%D0%B4%D1%96%D1%81%D1%96"
   },
   {
-    id: "social-animal", lang: "kk", kind: "textbook",
-    title: "Көпке ұмтылған жалғыз. Әлеуметтік психологияға кіріспе", author: "Эллиот Аронсон", origin: "OpenU.kz",
-    descriptionKk: "Топ ықпалы, қарым-қатынас және адам мінез-құлқы туралы танымдық еңбек.",
-    descriptionRu: "О влиянии группы, общении и человеческом поведении.",
-    url: "https://openu.kz/kz/book/kopke-umtylgan-zhalgyz-aleumettik-psihologiyaga-kirispe"
+    id: "unicef-stress-signs", lang: "kk", kind: "article",
+    title: "Баланың қатты күйзелісте екенін қалай түсінуге болады", author: "UNICEF Қазақстан", origin: "UNICEF · Ашық мақала",
+    descriptionKk: "Күйзелістің сыртқы белгілері және баламен бірге қолдануға болатын қолдау жаттығулары туралы ақпарат.",
+    descriptionRu: "О возможных признаках стресса и упражнениях для совместной поддержки ребенка.",
+    url: "https://www.unicef.org/kazakhstan/kk/%D0%BE%D2%9B%D0%B8%D2%93%D0%B0%D0%BB%D0%B0%D1%80/%D0%B1%D0%B0%D0%BB%D0%B0%D0%BD%D1%8B%D2%A3-%D2%9B%D0%B0%D1%82%D1%82%D1%8B-%D0%BA%D2%AF%D0%B9%D0%B7%D0%B5%D0%BB%D1%96%D1%81%D1%82%D0%B5-%D0%B5%D0%BA%D0%B5%D0%BD%D1%96%D0%BD-%D2%9B%D0%B0%D0%BB%D0%B0%D0%B9-%D1%82%D2%AF%D1%81%D1%96%D0%BD%D1%83%D0%B3%D0%B5-%D0%B1%D0%BE%D0%BB%D0%B0%D0%B4%D1%8B"
   },
   {
-    id: "internet", lang: "kk", kind: "textbook",
-    title: "Интернет психологиясы", author: "Патрисия Уоллейс", origin: "OpenU.kz",
-    descriptionKk: "Интернет ортасының эмоцияға, қарым-қатынасқа және мінез-құлыққа ықпалы.",
-    descriptionRu: "О влиянии онлайн-среды на общение, эмоции и поведение.",
-    url: "https://openu.kz/kz/book/internet-psihologiyasy"
+    id: "unicef-mental-report", lang: "kk", kind: "guide",
+    title: "Жасөспірімдердің психикалық денсаулығын нығайту және суицидтің алдын алу", author: "UNICEF Қазақстан", origin: "UNICEF · Есеп / PDF",
+    descriptionKk: "Қазақстандағы мектептер мен денсаулық сақтау ұйымдарына арналған зерттеу-есеп. Студентке жеке диагноз қою үшін арналмаған.",
+    descriptionRu: "Исследовательский отчет для образовательных и медицинских специалистов Казахстана.",
+    url: "https://www.unicef.org/kazakhstan/kk/%D0%B5%D1%81%D0%B5%D0%BF%D1%82%D0%B5%D1%80/%D0%B6%D0%B0%D1%81%D3%A9%D1%81%D0%BF%D1%96%D1%80%D1%96%D0%BC%D0%B4%D0%B5%D1%80%D0%B4%D1%96%D2%A3-%D0%BF%D1%81%D0%B8%D1%85%D0%B8%D0%BA%D0%B0%D0%BB%D1%8B%D2%9B-%D0%B4%D0%B5%D0%BD%D1%81%D0%B0%D1%83%D0%BB%D1%8B%D2%93%D1%8B%D0%BD-%D0%BD%D1%8B%D2%93%D0%B0%D0%B9%D1%82%D1%83-%D0%B6%D3%99%D0%BD%D0%B5-%D1%81%D1%83%D0%B8%D1%86%D0%B8%D0%B4%D1%82%D1%96%D2%A3-%D0%B0%D0%BB%D0%B4%D1%8B%D0%BD-%D0%B0%D0%BB%D1%83-%D0%B6%D2%AF%D0%B9%D0%B5%D0%B3%D0%B5-%D0%B5%D0%BD%D0%B3%D1%96%D0%B7%D1%83"
   },
   {
     id: "stress-guide", lang: "ru", kind: "guide",
@@ -73,7 +73,7 @@ const resources: Resource[] = [
     title: "5 способов улучшить психическое здоровье в интернете", author: "ЮНИСЕФ Қазақстан", origin: "UNICEF",
     descriptionKk: "Онлайн ортада өзіне және басқаларға қамқорлық жасауға арналған ұсыныстар.",
     descriptionRu: "Практические рекомендации о заботе о себе и других в интернете.",
-    url: "https://www.unicef.org/kazakhstan/Новостные-заметки/5-способов-улучшить-психическое-здоровье-в-интернете"
+    url: "https://www.unicef.org/kazakhstan/%D0%9D%D0%BE%D0%B2%D0%BE%D1%81%D1%82%D0%BD%D1%8B%D0%B5-%D0%B7%D0%B0%D0%BC%D0%B5%D1%82%D0%BA%D0%B8/5-%D1%81%D0%BF%D0%BE%D1%81%D0%BE%D0%B1%D0%BE%D0%B2-%D1%83%D0%BB%D1%83%D1%87%D1%88%D0%B8%D1%82%D1%8C-%D0%BF%D1%81%D0%B8%D1%85%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%BE%D0%B5-%D0%B7%D0%B4%D0%BE%D1%80%D0%BE%D0%B2%D1%8C%D0%B5-%D0%B2-%D0%B8%D0%BD%D1%82%D0%B5%D1%80%D0%BD%D0%B5%D1%82%D0%B5"
   }
 ];
 
@@ -88,7 +88,7 @@ export default function LibraryPanel({language, onBack}:{language:Lang;onBack:()
     <div className="feature-intro">
       <div className="eyebrow"><LibraryBig size={17}/>{tr("ПСИХОЛОГИЯЛЫҚ КІТАПХАНА","ПСИХОЛОГИЧЕСКАЯ БИБЛИОТЕКА")}</div>
       <h1>{tr("Оқуға арналған сенімді материалдар","Проверенные материалы для чтения")}</h1>
-      <p>{tr("Қазақша және орысша психология оқулықтары мен пайдалы нұсқаулықтарды таңда. Әр материал ресми сайттан ашылады.","Выбирай учебники по психологии и полезные пособия на казахском и русском. Каждый материал открывается на официальном сайте.")}</p>
+      <p>{tr("Қазақша және орысша сенімді оқу материалдарын таңда. Әр материал бастапқы ресми сайттан ашылады.","Выбирай проверенные материалы по психологии на казахском и русском. Все ссылки ведут к официальным первоисточникам.")}</p>
     </div>
     <div className="mindora-library-toolbar glass-panel">
       <div className="mindora-library-filters" role="group" aria-label={tr("Тіл бойынша сүзгі","Фильтр по языку")}>
