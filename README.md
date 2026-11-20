@@ -1,3 +1,30 @@
+# Mindora V2 — дизайн жаңартуы (20.11.2026)
+
+Бұл нұсқа Vercel-де жарияланған Mindora жобасының **интерфейсін** жақсартады. Ағымдағы Next.js функциялары сақталған.
+
+## Өзгергені
+
+- Компьютерде сол жақ **вертикалды навигация**: Әңгімелесу, EmotionSpace, Жаттығулар, Психолог, Көңіл күй, Баптаулар.
+- **Қыздың тікбұрышты фоны өңделді**: мөлдір `counselor-cutout.png` қосылды, портрет фонмен үйлеседі.
+- Үлкен жарық шеңбер, нәзік жарқыл, glassmorphism, карточка мен батырма стильдері жақсартылды.
+- Телефонда шағын экранға бейімделген алдыңғы мобильді навигация сақталды.
+- API кілті, камера рұқсаттары, тыныс алу таймері, EmotionSpace, психолог іздеу логикасы өзгерген жоқ.
+
+## Бар Vercel сайтына жаңарту (оңай тәсіл)
+
+1. `mindora-v2-update.zip` файлын жүктеп, Windows-та **Извлечь все** жасаңыз.
+2. Бар репозиторийді ашыңыз: `https://github.com/gulzira87475850414-spec/mindora`.
+3. **Add file → Upload files** түймесін басыңыз.
+4. ZIP-тен ашылған папканың ішіндегі **`app` және `public`** папкаларын GitHub жүктеу аймағына сүйреп апарыңыз. Файлдар репозиторийдің негізгі деңгейінде қалуы қажет.
+5. Файлдардың өзгергенін тексеріп, **Commit changes** басыңыз.
+6. Vercel GitHub репозиторийіне байланысқан болса, `main` тармағына енгізілген commit автоматты түрде жаңа deployment іске қосады. **Deployments** ішіндегі **Ready** күйін күтіңіз, кейін сайтты жаңартыңыз (`Ctrl+F5`).
+
+Егер GitHub веб-жүктеу интерфейсі бұрыннан бар файлды алмастыруға мүмкіндік бермесе, `app/page.tsx` және `app/globals.css` файлдарын жеке өңдеп, `public/media/counselor-cutout.png` файлын жүктеу қажет. Балама — GitHub Desktop арқылы өзгерген папкаларды көшіру, Commit және Push.
+
+> Дизайн нұсқасы. Жарияланған сайттағы дауыстық AI үшін `OPENAI_API_KEY` қажет. Қыздың бейнесі статикалық, дыбысқа синхрондалған видеоаватар емес. Vercel сайтында ақырғы визуалды және функционалдық тексеруді жүргізіңіз.
+
+---
+
 # Mindora — Vercel-ге дайын AI-психологиялық қолдау веб-платформасы
 
 **Стек:** Next.js App Router + React + TypeScript + CSS, OpenAI Responses API және Realtime API (WebRTC). **PWA:** Android/iPhone басты экранына ярлык қосуға арналған manifest + иконкалар.
@@ -85,3 +112,15 @@ public/manifest.webmanifest     Мобильді сайт манифесті
 ```
 
 Түпнұсқа дизайны — осы әңгімеде жасалған Mindora макеттері. Скриндегі студент суреті қолданылмайды: нақты камера тек рұқсатпен көрсетіледі.
+
+
+## Mindora V3 (visual refresh)
+
+- Removed duplicate desktop top navigation; desktop uses the vertical left sidebar.
+- Enlarged and integrated the existing counselor PNG with a brighter halo.
+- Improved glass cards, purple gradients, typography, and microphone emphasis.
+- On phones, the avatar and voice controls take priority; bottom navigation stays available.
+- Existing voice, text, camera, environment and breathing functionality is unchanged.
+- Small `V3` label beside the Mindora logo confirms the update.
+
+To update the GitHub repository, upload `app/page.tsx` and `app/globals.css` **at their original paths**. Verify both appear in the changed files before committing. GitHub's web interface may not replace existing files with an upload in all cases; if it refuses, edit the existing file or use GitHub Desktop. Vercel automatically deploys a new commit on `main`.
